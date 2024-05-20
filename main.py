@@ -1,5 +1,5 @@
 import random
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import FastAPI, File, UploadFile, HTTPException, Query
 import httpx
 from httpx import TimeoutException
 app = FastAPI()
@@ -53,7 +53,7 @@ async def upload_video(videoFile: UploadFile = File(...)):
 
 
 @app.get("/random-answer")
-def get_random_answer():
+def get_random_answer(question: str = Query(..., description="The question being asked")):
     return {"answer": random.choice(dummy_data)}
 
 
