@@ -1,3 +1,4 @@
+import random
 from fastapi import FastAPI, File, UploadFile, HTTPException
 import httpx
 from httpx import TimeoutException
@@ -5,6 +6,16 @@ app = FastAPI()
 
 WHISPER_API_URL = "https://api.whisper.com/v1/transcribe"
 WHISPER_API_KEY = "hsinQ7tFbJSbzKxbASQT5qGR1HB8k4f4"
+
+# 대답 더미 데이터
+dummy_data = [
+    "Hello, how can I help you today?",
+    "Goodbye! Have a great day!",
+    "Yes, that sounds like a good idea.",
+    "No, I don't think that's a good idea.",
+    "Maybe, let's think about it.",
+    "I'm not sure, let me get back to you on that.",
+]
 
 # 업로드 한 영상파일을 음성으로 변환하는 method
 
@@ -36,11 +47,14 @@ async def send_to_whisper(audioFile: UploadFile):
 async def upload_video(videoFile: UploadFile = File(...)):
     # 영상을 음성으로 변환하는 method 호출 !개발필요!  videoFile --> audioFile
 
-
     audioFile = 1
     # 그 음성을 변수 audioFile로 선언하여 send_to_whisper method 호출
     return await send_to_whisper(audioFile)
 
+
+@app.get("/random-answer")
+def get_random_answer():
+    return {"answer": random.choice(dummy_data)}
 
 
 if __name__ == "__main__":
