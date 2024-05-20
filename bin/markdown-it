@@ -1,0 +1,10 @@
+#!/bin/sh
+'''exec' "/Users/seunggeun/Desktop/서강대학교/인공지능 종합설계/인공지능종합설계_팀플/ComprehensiveDesignOfAI-TeamProject/bin/python" "$0" "$@"
+' '''
+# -*- coding: utf-8 -*-
+import re
+import sys
+from markdown_it.cli.parse import main
+if __name__ == '__main__':
+    sys.argv[0] = re.sub(r'(-script\.pyw|\.exe)?$', '', sys.argv[0])
+    sys.exit(main())
