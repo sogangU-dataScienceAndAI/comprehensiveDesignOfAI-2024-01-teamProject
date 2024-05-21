@@ -1,7 +1,9 @@
 import random
 from fastapi import FastAPI, File, UploadFile, HTTPException, Query
 import httpx
-from httpx import TimeoutException
+import tempfile
+import subprocess
+
 app = FastAPI()
 
 WHISPER_API_URL = "https://api.whisper.com/v1/transcribe"
@@ -17,39 +19,53 @@ dummy_data = [
     "I'm not sure, let me get back to you on that.",
 ]
 
-# 업로드 한 영상파일을 음성으로 변환하는 method
+
+def extract_audio_from_video(video_path: str, audio_path: str):
+    command = [
+        "ffmpeg",
+        "-i", video_path,
+        "-q:a", "0",
+        "-map", "a",
+        audio_path
+    ]
+    subprocess.run(command, check=True)
 
 
-async def send_to_whisper(audioFile: UploadFile):
-    video_bytes = await audioFile.read()
+async def convert_video_to_audio(video_file: UploadFile):
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as temp_video:
+        temp_video.write(await video_file.read())
+        video_path = temp_video.name
 
-    for attempt in range(3):  # 최대 3번 재시도
-        try:
-            async with httpx.AsyncClient(timeout=60) as client:  # 타임아웃 시간을 60초로 설정
-                response = await client.post(
-                    WHISPER_API_URL,
-                    headers={
-                        "Authorization": f"Bearer {WHISPER_API_KEY}"
-                    },
-                    files={
-                        "file": (audioFile.filename, video_bytes, audioFile.content_type)
-                    }
-                )
-                response.raise_for_status()  # 응답이 성공인지 확인
-                return response.json()
-        except (TimeoutException, httpx.HTTPStatusError) as e:
-            if attempt == 2:  # 마지막 시도에서도 실패한 경우
-                raise HTTPException(status_code=500, detail=f"Failed to transcribe video after 3 attempts: {str(e)}")
-            continue  # 재시도
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_audio:
+        audio_path = temp_audio.name
+
+    extract_audio_from_video(video_path, audio_path)
+    return audio_path
+
+
+async def send_to_whisper(audio_path: str):
+    with open(audio_path, "rb") as audio_file:
+        audio_bytes = audio_file.read()
+
+    async with httpx.AsyncClient(timeout=60) as client:
+        response = await client.post(
+            WHISPER_API_URL,
+            headers={"Authorization": f"Bearer {WHISPER_API_KEY}"},
+            files={"file": ("audio.wav", audio_bytes, "audio/wav")}
+        )
+
+    response.raise_for_status()
+    return response.json()
 
 
 @app.post("/upload-video/")
-async def upload_video(videoFile: UploadFile = File(...)):
-    # 영상을 음성으로 변환하는 method 호출 !개발필요!  videoFile --> audioFile
-
-    audioFile = 1
-    # 그 음성을 변수 audioFile로 선언하여 send_to_whisper method 호출
-    return await send_to_whisper(audioFile)
+async def upload_video(file: UploadFile = File(...)):
+    try:
+        audio_path = await convert_video_to_audio(file)
+        transcription = await send_to_whisper(audio_path)
+        return transcription
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/random-answer")
