@@ -9,8 +9,8 @@ import logging
 app = FastAPI()
 
 WHISPER_API_URL = "https://api.lemonfox.ai/v1/audio/transcriptions"  # Whisper API URL이 정확한지 확인하세요.
-WHISPER_API_KEY = "Fk9XKii3UgRtEPsIn6gwgo2YE2y79OTh"
-SAVE_DIRECTORY = "/Users/edgecross-seunggeun/Desktop"  # 오디오, 비디오 파일 임시 저장 경로를 지정하세요.
+WHISPER_API_KEY = "WHISPER_API_KEY"
+SAVE_DIRECTORY = "SAVE_DIRECTORY"  # 오디오, 비디오 파일 임시 저장 경로를 지정하세요.
 
 # 대답 더미 데이터
 dummy_data = [
