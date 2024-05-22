@@ -9,8 +9,8 @@ import logging
 app = FastAPI()
 
 WHISPER_API_URL = "https://api.lemonfox.ai/v1/audio/transcriptions"  # Whisper API URL이 정확한지 확인하세요.
-WHISPER_API_KEY = "WHISPER_API_KEY"
-SAVE_DIRECTORY = "SAVE_DIRECTORY"  # 오디오, 비디오 파일 임시 저장 경로를 지정하세요.
+WHISPER_API_KEY = "Fk9XKii3UgRtEPsIn6gwgo2YE2y79OTh"
+SAVE_DIRECTORY = "/Users/edgecross-seunggeun/Desktop"  # 오디오, 비디오 파일 임시 저장 경로를 지정하세요.
 
 # 대답 더미 데이터
 dummy_data = [
@@ -22,7 +22,7 @@ dummy_data = [
     "I'm not sure, let me get back to you on that.",
 ]
 
-logging.basicConfig(level=logging.INFO)
+# logging.basicConfig(level=logging.INFO)
 
 
 def extract_audio_from_video(video_path: str, audio_path: str):
@@ -60,8 +60,8 @@ async def send_to_whisper(audio_path: str):
             files={"file": ("audio.wav", audio_bytes, "audio/wav")}
         )
 
-    logging.info(f"Whisper API response status: {response.status_code}")
-    logging.info(f"Whisper API response text: {response.text}")
+    # logging.info(f"Whisper API response status: {response.status_code}")
+    # logging.info(f"Whisper API response text: {response.text}")
 
     response.raise_for_status()
     return response.json()
